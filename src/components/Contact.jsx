@@ -32,6 +32,7 @@ export default function Contact() {
     subject: '',
     message: '',
   })
+
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
 
@@ -54,27 +55,34 @@ export default function Contact() {
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
 
     if (!serviceId || !templateId || !publicKey) {
-      showToast(
-        'error',
-        'EmailJS is not configured. Add VITE_EMAILJS_* variables to your .env file.',
-      )
+      showToast('error', 'EmailJS configuration missing.')
       setLoading(false)
       return
     }
 
     try {
       await emailjs.send(
+        serviceId,
+        templateId,
         {
           name: formData.name,
           email: formData.email,
           subject: formData.subject,
           message: formData.message,
-        }
+        },
+        publicKey
       )
-      showToast('success', 'Message sent successfully! I will get back to you soon.')
-      setFormData({ name: '', email: '', subject: '', message: '' })
-    } catch {
-      showToast('error', 'Failed to send message. Please try again or email me directly.')
+
+      showToast('success', 'Message sent successfully!')
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      })
+    } catch (error) {
+      console.error('EmailJS Error:', error)
+      showToast('error', 'Failed to send message. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -85,174 +93,85 @@ export default function Contact() {
 
   return (
     <section id="contact" className="relative bg-slate-950 py-20 sm:py-28">
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-blue-950/10 to-slate-950" />
-
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-16 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Get In <span className="text-cyan-400">Touch</span>
-          </h2>
-          <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500" />
-          <p className="mx-auto mt-6 max-w-2xl text-slate-300">
-            Have a project in mind or want to collaborate? Send me a message and I&apos;ll respond
-            as soon as possible.
-          </p>
-        </div>
-
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-          <div className="animate-fade-in-up">
-            <div className="rounded-2xl border border-slate-800/60 bg-slate-900/50 p-8 backdrop-blur-md">
-              <h3 className="text-xl font-semibold text-white">Contact Information</h3>
-              <ul className="mt-8 space-y-6">
-                {contactInfo.map(({ icon: Icon, label, value, href }) => (
-                  <li key={label} className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
-                      <Icon className="h-5 w-5 text-cyan-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-500">{label}</p>
-                      {href ? (
-                        <a
-                          href={href}
-                          className="mt-1 block text-slate-200 transition-colors hover:text-cyan-400"
-                        >
-                          {value}
-                        </a>
-                      ) : (
-                        <p className="mt-1 text-slate-200">{value}</p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-10 border-t border-slate-800/60 pt-8">
-                <p className="text-sm font-medium text-slate-500">Follow me</p>
-                <div className="mt-4 flex gap-4">
-                  {socialLinks.map(({ icon: Icon, href, label }) => (
-                    <a
-                      key={label}
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-700/60 bg-slate-800/50 text-slate-400 transition-all hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-400"
-                      aria-label={label}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
+      <div className="relative mx-auto max-w-3xl px-4">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-2xl border border-slate-800/60 bg-slate-900/50 p-8 backdrop-blur-md"
+        >
+          <div className="grid gap-6 sm:grid-cols-2">
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className={inputClass}
+              placeholder="Your Name"
+            />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className={inputClass}
+              placeholder="Your Email"
+            />
           </div>
 
-          <div className="animate-fade-in-up animation-delay-200">
-            <form
-              onSubmit={handleSubmit}
-              className="rounded-2xl border border-slate-800/60 bg-slate-900/50 p-8 backdrop-blur-md"
-            >
-              <div className="grid gap-6 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-300">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className={inputClass}
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-300">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className={inputClass}
-                    placeholder="john@example.com"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <label htmlFor="subject" className="mb-2 block text-sm font-medium text-slate-300">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  required
-                  className={inputClass}
-                  placeholder="Project inquiry"
-                />
-              </div>
-
-              <div className="mt-6">
-                <label htmlFor="message" className="mb-2 block text-sm font-medium text-slate-300">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  rows={5}
-                  className={`${inputClass} resize-none`}
-                  placeholder="Tell me about your project..."
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-5 w-5" />
-                    Send Message
-                  </>
-                )}
-              </button>
-            </form>
+          <div className="mt-6">
+            <input
+              type="text"
+              name="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              required
+              className={inputClass}
+              placeholder="Subject"
+            />
           </div>
-        </div>
+
+          <div className="mt-6">
+            <textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              required
+              rows={5}
+              className={`${inputClass} resize-none`}
+              placeholder="Your Message"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-8 py-3.5 text-sm font-semibold text-white"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="h-5 w-5" />
+                Send Message
+              </>
+            )}
+          </button>
+        </form>
       </div>
 
       {toast && (
         <div
-          role="alert"
-          className={`fixed bottom-6 right-6 z-50 flex max-w-sm items-center gap-3 rounded-xl border px-5 py-4 shadow-2xl backdrop-blur-md animate-fade-in-up ${
+          className={`fixed bottom-6 right-6 z-50 rounded-xl px-5 py-4 ${
             toast.type === 'success'
-              ? 'border-green-500/40 bg-green-950/90 text-green-300'
-              : 'border-red-500/40 bg-red-950/90 text-red-300'
+              ? 'bg-green-600 text-white'
+              : 'bg-red-600 text-white'
           }`}
         >
-          {toast.type === 'success' ? (
-            <CheckCircle className="h-5 w-5 shrink-0" />
-          ) : (
-            <XCircle className="h-5 w-5 shrink-0" />
-          )}
-          <p className="text-sm font-medium">{toast.message}</p>
+          {toast.message}
         </div>
       )}
     </section>

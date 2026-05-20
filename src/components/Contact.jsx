@@ -64,15 +64,12 @@ export default function Contact() {
 
     try {
       await emailjs.send(
-        serviceId,
-        templateId,
         {
-          from_name: formData.name,
-          from_email: formData.email,
+          name: formData.name,
+          email: formData.email,
           subject: formData.subject,
           message: formData.message,
-        },
-        publicKey,
+        }
       )
       showToast('success', 'Message sent successfully! I will get back to you soon.')
       setFormData({ name: '', email: '', subject: '', message: '' })
